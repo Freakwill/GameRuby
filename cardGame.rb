@@ -17,6 +17,10 @@ class Card < Thing
         Card.new($suits[rand(4).to_i], $ranks[rand(13).to_i])
     end
 
+    def Card.random_list(n)
+        Array.new(n) {Card.random}
+    end
+
     def Card.fromStr(s)
         suit, rank = s[0], s[1]
         Card.new(suit, rank)
@@ -54,19 +58,9 @@ class Card < Thing
         end
     end
 end
-            
 
-class Pair < Array
-    include Show
 
-    def Pair.random
-        Pair.new([Card.random, Card.random])
-    end
-
-    def Pair.fromStr(s)
-        a, b = s.split
-        Pair.new([Card.fromStr(a), Card.fromStr(b)])
-    end
+module Order
 
     def major
         if self[0] < self[1]
@@ -82,6 +76,23 @@ class Pair < Array
         else
             self[1]
         end
+    end
+
+
+end
+            
+
+class Pair < Array
+    include Show
+    include Order
+
+    def Pair.random
+        Pair.new([Card.random, Card.random])
+    end
+
+    def Pair.fromStr(s)
+        a, b = s.split
+        Pair.new([Card.fromStr(a), Card.fromStr(b)])
     end
 
     def is_dual?
@@ -144,21 +155,58 @@ class Pair < Array
     end
 
     def to_s
-        "(#{self[0].to_s}  #{self[1].to_s})"
+        "(#{self.minor.to_s} #{self.major.to_s})"
     end
 
 end
 
-# a = Pair.fromStr("♣6 ♣Q")
-# b = Pair.random
+class Team < Array
+    include Show
+    include Order
 
-# puts a.show, b.show
-# puts a.major.show, b.major.show
+    def Team.random
+        Team.new([Pair.random, Pair.random])
+    end
 
-# puts a.total, b.total
-# puts a.is_dual?, b.is_dual?
+    def Team.fromCards(cards, n=1)
+        p = []
+        cards.each_with_index do |c, k|
+            if k != 0 and k != n
+                p << c
+            end
+        end
+        p = Pair.new(p)
+        Team.new([Pair.new([cards[0], cards[n]]), p])
+    end
 
-# puts a < b
+    def toCards
+        [self.minor[0], self.minor[1], self.major[0], self.major[1]]
+    end
+
+    def rearange(n)
+        cards = toCards
+        Team.fromCards(cards, n)
+    end
+
+    def <=>(other)
+        score = 0
+        if self.minor < other.minor
+            score -= 1
+        elsif self.minor > other.minor
+            score += 1
+        end
+        if self.major < other.major
+            score -= 1
+        elsif self.major > other.major
+            score += 1
+        end
+    end
+
+    def to_s
+        "#{self.minor.to_s} || #{self.major.to_s}"
+    end
+end
+
 
 class CardGame
     # attr_accessor :tests   # set attribute accessors
@@ -176,14 +224,18 @@ class CardGame
         return Pair.random
     end
 
+    def get_team
+        return Team.random
+    end
+
     def bet
         puts "How many do you bet?"
         STDIN.gets.chomp.to_i
     end
 
     def register(player)
+        @player = player
     end
-
 
     def start
         puts <<~RULE
@@ -212,8 +264,8 @@ class CardGame
 
 end
 
-cg = CardGame.new
-cg.start
+# cg = CardGame.new
+# cg.start
 
 # require "thor"
  
