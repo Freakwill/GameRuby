@@ -208,13 +208,36 @@ class Team < Array
 end
 
 
+class Gambler
+    def initialize(name, money)
+        @name, @money = name, money
+        @bet = 0
+    end
+
+    def bet(money)
+        @bet = money
+    end
+
+    def win
+        @money += @bet
+    end
+
+    def lose
+        @money -= @bet
+    end
+
+    def lose_all?
+        @money < 0
+    end
+end
+
 class CardGame
     # attr_accessor :tests   # set attribute accessors
 
-    # def initialize(n=4, tests=10)
-    #     @n = n
-    #     @tests = tests
-    # end
+    def initialize(money=100, rounds=3)
+        @money = money
+        @rounds = rounds
+    end
 
     def get_cards(n=2)
         return Array.new(n) {Card.random}
@@ -242,24 +265,40 @@ class CardGame
         play cards
         RULE
 
-        puts "Let's begin."
+        puts "Let's begin. Good Luck."
         k = 0
         while k<3
             k += 1
-            computer = get_pair
-            player = get_pair
-            money = bet
-            computer.show
-            player.show
-            if computer < player
+            computerCard = get_team
+            playerCard = get_cards(4)
+            @player.bet(bet)
+            
+            playerCard.each do |c|
+                c.show
+            end
+            puts "Strategy:"
+            n = gets.chomp.to_i
+            playerCard = Team.fromCards(playerCard, n)
+            puts "Computer:"
+            computerCard.show
+            puts "You:"
+            playerCard.show
+            score = player <=> computer 
+            case score
+            when 1
+                total += bet
                 puts 'U win'
-            elsif computer == player
-                puts 'draw'
-            else
+            when -1
+                total -= bet
                 puts 'U lose'
+            when 0
+                puts 'Draw'
+            end
+            if total < 0
+                puts 'U have no money!'
             end
         end
-        puts "Game over. U win"
+        puts "Game over."
     end
 
 end
@@ -269,15 +308,15 @@ end
 
 # require "thor"
  
-# class CardGameCLI < Thor
-#     # ruby game.rb play --tests 12
-#     desc "CardGame", "play cards, have a good mood."
-#     option :n, :type => :numeric, :default => 4
-#     option :tests, :aliases => :t, :type => :numeric, :default => 10
-#     def play
-#         g = ABGame.new(n=options[:n], tests=options[:tests])
-#         g.start
-#     end
-# end
+class CardGameCLI < Thor
+    # ruby game.rb play --tests 12
+    desc "CardGame", "play cards, have a good mood."
+    option :n, :type => :numeric, :default => 4
+    option :tests, :aliases => :t, :type => :numeric, :default => 10
+    def play
+        g = ABGame.new(n=options[:n], tests=options[:tests])
+        g.start
+    end
+end
  
 # ABGameCLI.start(ARGV)
