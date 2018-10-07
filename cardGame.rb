@@ -283,18 +283,18 @@ class CardGame
             computerCard.show
             puts "You:"
             playerCard.show
-            score = player <=> computer 
+            score = @player <=> computer 
             case score
             when 1
-                total += bet
+                @player.win
                 puts 'U win'
             when -1
-                total -= bet
+                @player.lose
                 puts 'U lose'
             when 0
                 puts 'Draw'
             end
-            if total < 0
+            if @player.lose_all?
                 puts 'U have no money!'
             end
         end
@@ -306,7 +306,7 @@ end
 # cg = CardGame.new
 # cg.start
 
-# require "thor"
+require "thor"
  
 class CardGameCLI < Thor
     # ruby game.rb play --tests 12
