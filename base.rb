@@ -1,5 +1,7 @@
 # Basic Code
 
+require "Open3"
+
 module Show
     def show
         puts to_s
@@ -24,5 +26,14 @@ class Thing
 end
 
 class Player < Thing
+end
 
+
+def say(s)
+    Open3.popen2("say", s)
+end
+
+def sayx(s)
+    puts s
+    Open3.popen2("say", s)
 end
